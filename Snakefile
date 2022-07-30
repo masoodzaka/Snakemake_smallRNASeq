@@ -1,5 +1,5 @@
 
-__author__ = "Masood Zaka (https://github.com/masoodzaka)"
+__author__ = "Masood Zaka (https://github.com/masoodzaka/Snakemake_smallRNASeq.git)"
 __licence__ = "MIT"
 
 shell.prefix("set -o pipefail; ")
@@ -45,7 +45,7 @@ rule get_gff:
 
 rule fastqc:
     input:
-        "data/Reads/{sample}/{sample}.fq.gz"
+        "fastq/{sample}/{sample}.fq.gz"
     output:
         html="qc/fastqc/{sample}_fastqc.html",
         zip="qc/fastqc/{sample}_fastqc.zip"
@@ -65,7 +65,7 @@ rule fastqc:
 
 rule cutadapt:
 	input:
-		reads=("data/Reads/{sample}/{sample}.fq.gz"),
+		reads=("fastq/{sample}/{sample}.fq.gz"),
 
 	output:
 		"cutadapt/{sample}.trimmed.fq.gz"

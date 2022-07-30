@@ -12,7 +12,8 @@ from snakemake.utils import min_version
 SAMPLES=["DFU01","DFU02","DFU03","DFU04","DM01","DM02","DM03","DM04"]
 
 rule all:
-	input:("qc/multiqc_report.html")
+	input:"qc/multiqc_report.html",
+		expand("salmon/{sample}_quant/quant.sf", sample=SAMPLES)
 
 
 rule get_genome:
@@ -45,7 +46,7 @@ rule get_gff:
 
 rule fastqc:
     input:
-        "fastq/{sample}/{sample}.fq.gz"
+        "data/Reads/{sample}/{sample}.fq.gz"
     output:
         html="qc/fastqc/{sample}_fastqc.html",
         zip="qc/fastqc/{sample}_fastqc.zip"
@@ -65,7 +66,7 @@ rule fastqc:
 
 rule cutadapt:
 	input:
-		reads=("fastq/{sample}/{sample}.fq.gz"),
+		reads=("data/Reads/{sample}/{sample}.fq.gz"),
 
 	output:
 		"cutadapt/{sample}.trimmed.fq.gz"
@@ -249,7 +250,7 @@ rule samtools_filter_bam_index:
 rule bedtools_annotate:
 	input:
 		bam="filtered_bam/{sample}.bam",
-		gff="refs/mirbase.gff"
+		gff="refs/mirbase.gff",
 
 	output:
 		"annotation/{sample}.bed"
@@ -266,7 +267,8 @@ rule bedtools_annotate:
 rule featureCounts:
 	input:
 		bam="filtered_bam/{sample}.bam",
-		gff="refs/mirbase.gff"
+		gff="refs/mirbase.gff",
+		fasta="refs/reference.fasta"
 
 	output:
 		multiext("featureCounts/{sample}",".featureCounts", ".featureCounts.summary")
@@ -283,9 +285,11 @@ rule featureCounts:
 		-T {threads} \
 		-t miRNA \
 		-g Name \
+		-G {input.fasta} \
 		-F GFF \
+		--fracOverlap 0.2 \
 		-O \
-		-s 1 \
+		-s 0 \
 		-M \
 		-a \
 		{input.gff} \
@@ -371,3 +375,4 @@ rule multiqc:
     shell:"""
         multiqc {input} -n multiqc_report -f -q -o qc
     """
+
